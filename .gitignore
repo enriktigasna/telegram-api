@@ -107,6 +107,14 @@ dist
 # Docusaurus cache and generated files
 .docusaurus
 
+
+# Auto-generated documentation
+docs/*
+
+
+# to generate documentation:
+# npm run docs
+
 # Serverless directories
 .serverless/
 
