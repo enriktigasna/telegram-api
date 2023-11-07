@@ -70,5 +70,12 @@ export interface Chat {
     type: ChatType;
 }
 
+export interface Update {
+    update_id: number,
+    message?: Message,
+    edited_message?: Message,
+    edited_channel_post?: Message
+}
+
 /** Represents the type of chat in Telegram (private, group, supergroup, or channel). */
 export type ChatType = "private" | "group" | "supergroup" | "channel";

@@ -1,5 +1,5 @@
 import EventEmitter from "events";
-import type { APIResponse, User, Message } from "./types";
+import type { APIResponse, User, Message, Update } from "./types";
 
 /**
  * Represents a client for interacting with the Telegram Bot API.
@@ -43,7 +43,7 @@ export class Client extends EventEmitter {
     if (apiResponse.ok && apiResponse.result) {
       return apiResponse.result;
     } else {
-      throw new Error(apiResponse.description || "Error fetching user data");
+      throw new Error(`Error getting update \n\n \x1b[33m ${apiResponse.error_code} \x1b[0m \x1b[34m ${apiResponse.description} \x1b[0m`);
     }
   }
 
@@ -84,7 +84,41 @@ export class Client extends EventEmitter {
     if (apiResponse.ok && apiResponse.result) {
       return apiResponse.result;
     } else {
-      throw new Error(apiResponse.description || "Error sending message");
+      throw new Error(`Error getting update \n\n \x1b[33m ${apiResponse.error_code} \x1b[0m \x1b[34m ${apiResponse.description} \x1b[0m`);
     }
   }
-}
+  async getUpdates(offset?: number, limit?: number, timeout?: number, allowed_updates?: string[]): Promise<Update[]> {
+    const fetchData = async (): Promise<APIResponse> => {
+      let link = `${this.base_url}/getUpdates`;
+
+      if (offset != undefined) {
+        link += `?offset=${offset}`;
+      }
+
+      if (limit != undefined) {
+        link += `&limit=${limit}`;
+      }
+
+      if (timeout != undefined) {
+        link += `&timeout=${timeout}`;
+      }
+
+      if (allowed_updates != undefined) {
+        link += `&allowed_updates=${allowed_updates}`;
+      }
+
+      const response = await fetch(link);
+
+      const data: APIResponse = await response.json();
+      return data;
+    }
+
+    const apiResponse: APIResponse = await fetchData();
+
+    if (apiResponse.ok && apiResponse.result) {
+      return apiResponse.result;
+    } else {
+      throw new Error(`Error getting update \n\n \x1b[33m ${apiResponse.error_code} \x1b[0m \x1b[34m ${apiResponse.description} \x1b[0m`);
+    }
+  }
+} 
