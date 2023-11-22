@@ -1,9 +1,10 @@
 {
   "type": "module",
-  "name": "telegram",
-  "version": "1.0.0",
+  "name": "telebot.js",
+  "version": "1.0.1",
   "description": "",
   "main": "index.js",
+  "files": ["dist/client.js"],
   "directories": {
     "doc": "docs",
     "example": "examples",
@@ -11,7 +12,7 @@
   },
   "scripts": {
     "test": "mocha",
-    "build": "tsc",
+    "build": "tsup src/*.ts --format cjs,esm --dts",
     "docs": "typedoc"
   },
   "keywords": [],
@@ -25,10 +26,12 @@
     "node": "^21.1.0"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.26.2",
     "@digitak/esrun": "^3.2.25",
     "@types/mocha": "^10.0.3",
     "@types/node": "^20.8.10",
     "ts-node": "^10.9.1",
+    "tsup": "^8.0.1",
     "typedoc": "^0.25.3",
     "typescript": "^5.2.2"
   }

@@ -1,12 +1,17 @@
-# Telegram API (Node.js with TypeScript)
+# Telebot.js (Node.js with TypeScript)
 
 > telegram bot api for node.js written in typescript
 
-Telegram API is a Node.js library written in TypeScript that provides a simple interface for interacting with the Telegram Bot API. With this library, you can easily send messages, get information about your bot, and handle updates from Telegram. The library also supports polling and events for real-time interaction with the Telegram server.
+Telebot.js is a Node.js library written in TypeScript that provides a simple interface for interacting with the Telegram Bot API. With this library, you can easily send messages, get information about your bot, and handle updates from Telegram. The library also supports polling and events for real-time interaction with the Telegram server.
+
+## Installation
+```bash
+npm i telebot.js
+```
 
 ## Example
 ```typescript
-import { Client, User, Message, Update } from 'telegram-api';
+const { Client } = require("telebot.js")
 
 const token = 'YOUR_TELEGRAM_BOT_TOKEN'; // Replace with telegram bot token
 const client = new Client(token);
@@ -22,9 +27,13 @@ const client = new Client(token);
     const message: Message = await client.sendMessage(chatId, 'Hello, Telegram!');
     console.log('Message Sent:', message);
 
-    // Get updates
-    const updates: Update[] = await client.getUpdates();
-    console.log('Updates:', updates);
+    // Send on events
+    client.on("message", (msg)=>{
+    console.log(msg.text)
+    client.sendMessage(msg.chat.id, `${msg.from.first_name} says ${msg.text}`)
+    
+    // Turn on polling
+    client.startPolling();
   } catch (error) {
     console.error('Error:', error);
   }
