@@ -51,9 +51,19 @@ Get updates from the Telegram server.
     timeout (Optional): Timeout in seconds for long polling.
     allowed_updates (Optional): List of update types to receive.
 
+### startPolling()
+
+Start polling for updates from the Telegram server.
+
+    timeout (Default 30): Timeout in seconds for long polling.
+
+### stopPolling()
+
+Stop polling for updates.
+
 ## TODO
--  Add more methods for extended API coverage.
--  Implement polling and events for real-time updates.
+-  Add more methods for extended API coverage. ✅ [COMPLETED]
+-  Implement polling and events for real-time updates. ✅ [COMPLETED]
 
 ## Documentation
 

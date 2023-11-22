@@ -12,7 +12,10 @@ export class Client extends EventEmitter {
   server: string;
   /** The base URL for making API requests. */
   base_url: string;
+  /** The offset used for polling */
+  offset: number;
 
+  private pollingActive: boolean = false;
 
   /**
    * Creates a new Client instance.
@@ -23,6 +26,7 @@ export class Client extends EventEmitter {
     this.token = token;
     this.server = "https://api.telegram.org";
     this.base_url = `${this.server}/bot${this.token}`;
+    this.offset = 0;
   }
 
   /**
@@ -43,7 +47,9 @@ export class Client extends EventEmitter {
     if (apiResponse.ok && apiResponse.result) {
       return apiResponse.result;
     } else {
-      throw new Error(`Error getting update \n\n \x1b[33m ${apiResponse.error_code} \x1b[0m \x1b[34m ${apiResponse.description} \x1b[0m`);
+      throw new Error(
+        `Error getting update \n\n \x1b[33m ${apiResponse.error_code} \x1b[0m \x1b[34m ${apiResponse.description} \x1b[0m`
+      );
     }
   }
 
@@ -84,10 +90,27 @@ export class Client extends EventEmitter {
     if (apiResponse.ok && apiResponse.result) {
       return apiResponse.result;
     } else {
-      throw new Error(`Error getting update \n\n \x1b[33m ${apiResponse.error_code} \x1b[0m \x1b[34m ${apiResponse.description} \x1b[0m`);
+      throw new Error(
+        `Error getting update \n\n \x1b[33m ${apiResponse.error_code} \x1b[0m \x1b[34m ${apiResponse.description} \x1b[0m`
+      );
     }
   }
-  async getUpdates(offset?: number, limit?: number, timeout?: number, allowed_updates?: string[]): Promise<Update[]> {
+  /**
+   * Retrieves updates from the Telegram server.
+   * @async
+   * @param {number=} offset - (Optional) The update ID to start from.
+   * @param {number=} limit - (Optional) The maximum number of updates to retrieve.
+   * @param {number=} timeout - (Optional) Timeout in seconds for long polling.
+   * @param {string[]=} allowed_updates - (Optional) Array of allowed update types.
+   * @returns {Promise<Update[]>} A Promise that resolves to an array of updates.
+   * @throws {Error} If there is an error fetching updates from the API.
+   */
+  async getUpdates(
+    offset?: number,
+    limit?: number,
+    timeout?: number,
+    allowed_updates?: string[]
+  ): Promise<Update[]> {
     const fetchData = async (): Promise<APIResponse> => {
       let link = `${this.base_url}/getUpdates`;
 
@@ -111,14 +134,66 @@ export class Client extends EventEmitter {
 
       const data: APIResponse = await response.json();
       return data;
-    }
+    };
 
     const apiResponse: APIResponse = await fetchData();
 
     if (apiResponse.ok && apiResponse.result) {
       return apiResponse.result;
     } else {
-      throw new Error(`Error getting update \n\n \x1b[33m ${apiResponse.error_code} \x1b[0m \x1b[34m ${apiResponse.description} \x1b[0m`);
+      throw new Error(
+        `Error getting update \n\n \x1b[33m ${apiResponse.error_code} \x1b[0m \x1b[34m ${apiResponse.description} \x1b[0m`
+      );
     }
   }
-} 
+  /**
+   * Processes a Telegram update and emits corresponding events.
+   * @param {Update} update - The Telegram update to process.
+   */
+  processUpdate(update: Update) {
+    if (update.message) {
+      this.emit('message', update.message);
+    }
+    if (update.edited_message) {
+      this.emit('editedMessage', update.edited_message);
+    }
+    if(update.edited_channel_post) {
+      this.emit('editedChannelPost', update.edited_channel_post)
+    }
+    if(update.channel_post) {
+      this.emit('channelPost', update.channel_post)
+    }
+    this.emit('update', update)
+  }
+  /**
+   * Starts polling for updates from the Telegram server.
+   * @async
+   * @param {number} timeout - Timeout in seconds for long polling. Default is 30.
+   */
+  async startPoll(timeout: number=30) {
+    this.pollingActive = true;
+
+    while (this.pollingActive) {
+      try {
+        const updates = await this.getUpdates(this.offset, 1, timeout);
+
+        for (const update of updates) {
+          this.offset = update.update_id + 1;
+          this.processUpdate(update);
+        }
+      } catch (error) {
+        // Handle the error here or allow it to propagate to the calling code
+        console.error(`Error in startPoll: ${error}`);
+      }
+
+      // Add a delay before making the next polling request
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+  }
+  /**
+   * Stops polling for updates.
+   */
+  async stopPolling(){
+    this.pollingActive = false;
+  }
+}
